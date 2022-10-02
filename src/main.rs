@@ -155,7 +155,7 @@ fn is_in_landfill(entry: &Entry) -> bool {
     //                         Z:                                            |---------|
     let landfill_pos: [u8; 12] = [0xFA, 0xD4, 0x29, 0xC4, 0xB8, 0x4F, 0x92, 0x40, 0xEF, 0xD2, 0x35, 0xC4];
 
-    if entry.data.len() < 18 {
+    if !entry.tag.ends_with("Transform") || entry.data.len() < 18 {
         return false
     }
 
