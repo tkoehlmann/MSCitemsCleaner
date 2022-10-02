@@ -11,3 +11,6 @@ Cargo.lock
 
 # Development environment stuff, feel free to add yours
 /.vscode
+
+# Files to test with for convenience (items.txt and backups)
+/items*.txt
