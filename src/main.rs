@@ -167,29 +167,27 @@ fn is_in_landfill(entry: &Entry) -> bool {
 }
 
 
-
-// Trims the item id from a full tag name, i.e. "pikex36Transform" -> "pikex36"
-fn get_item_id(tag: &String) -> String {
-    let mut numbers_count = 0;
+// Returns the base item name (i.e. "pikex12Transform" -> "pikex" or "spraycan0122" -> "spraycan01")
+fn get_item_base(tag: &String) -> String {
     let tag_array = tag.as_bytes();
     for i in 0..tag_array.len() {
         let c = tag_array[i];
-        if numbers_count == 0 {
-            if c >= '0' as u8 && c <= '9' as u8 {
-                numbers_count += 1
-            }
-        } else {
-            if 
-                c < '0' as u8 || c > '9' as u8 ||
-                (
-                    tag.starts_with("spraycan") &&
-                    numbers_count >= 2
-                )
-            {
-                return String::from_utf8(tag_array[0..i].to_vec()).unwrap();
-            } else {
-                numbers_count += 1
-            }
+        if c >= '0' as u8 && c <= '9' as u8 {
+            let to_add = if tag.starts_with("spraycan") { 2 } else { 0 }; // +2 because spraycans have a numeric ID
+            return String::from_utf8(tag_array[0..(i+to_add)].to_vec()).unwrap()
+        }
+    }
+    String::from(tag)
+}
+
+// Trims the item id from a full tag name, i.e. "pikex36Transform" -> "pikex36"
+fn get_item_id(tag: &String) -> String {
+    let tag_array = tag.as_bytes();
+    let base = get_item_base(&tag);
+    for i in base.len()..tag_array.len() {
+        let c = tag_array[i];
+        if c < '0' as u8 || c > '9' as u8 {
+            return String::from_utf8(tag_array[0..i].to_vec()).unwrap();
         }
     }
     String::from(tag)
@@ -203,22 +201,21 @@ fn tag_set_new_count(e: &mut Entry, n: usize) {
     let tag_clone = e.tag.clone();
     let tag_array = tag_clone.as_bytes();
 
-    let mut start_num_pos = 0;
+    let start_num_pos;
     let mut end_num_pos = 0;
 
-    for i in 0..tag_array.len() {
+    let base = get_item_base(&tag_clone);
+    start_num_pos = base.len();
+    for i in start_num_pos..tag_array.len() {
         let c = tag_array[i];
-        if c >= '0' as u8 && c <= '9' as u8 {
-            if start_num_pos == 0 {
-                start_num_pos = i
-            }
-        } else if start_num_pos > 0 && end_num_pos == 0 {
-            end_num_pos = i
+        if c < '0' as u8 || c > '9' as u8 {
+            end_num_pos = i;
+            break;
         }
     }
 
     e.tag = format!("{}{}{}",
-        String::from_utf8(tag_array[0..start_num_pos].to_vec()).unwrap(),
+        base,
         n,
         String::from_utf8(tag_array[end_num_pos..tag_array.len()].to_vec()).unwrap()
     );
