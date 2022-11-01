@@ -1,6 +1,6 @@
 # MSCitemsCleaner
 
-A save file cleaner for the video My Summer Car
+A save file cleaner for the video game My Summer Car
 
 ## What it does
 
